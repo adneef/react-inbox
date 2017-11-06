@@ -12,7 +12,7 @@ const Message = ({message, starClick, selected}) => {
       <div className="col-xs-1">
         <div className="row">
           <div className="col-xs-2">
-            <input type="checkbox" />
+            <input type="checkbox" checked={!!message.selected} readOnly={true}/>
           </div>
           <div className="col-xs-2" onClick ={ starShow }>
             <i className={message.starred ? "star fa fa-star" : "star fa fa-star-o"}></i>
@@ -21,9 +21,9 @@ const Message = ({message, starClick, selected}) => {
       </div>
       <div className="col-xs-11">
         {message.labels.map((label, i) => <span key={i+1} className="label label-warning">{label}</span>)}
-        <a href="">
+        {/* <a href=""> */}
           {message.subject}
-        </a>
+        {/* </a> */}
       </div>
     </div>
   )
