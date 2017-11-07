@@ -5,9 +5,21 @@ import './App.css'
 
 class App extends Component {
 
-  constructor(props) {
-    super(props)
-    this.state = { messages: props.messages }
+  state = {
+    messages: []
+  }
+
+  async componentDidMount() {
+    const messages = await this.getMessages()
+    this.setState({
+      messages: messages
+    })
+  }
+
+  async getMessages() {
+    const res = await fetch(`http://localhost:8082/api/messages`)
+    const json = await res.json()
+    return json._embedded.messages
   }
 
   toggleProperty( message, property ) {
