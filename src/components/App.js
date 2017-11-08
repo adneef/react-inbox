@@ -5,8 +5,11 @@ import './App.css'
 
 class App extends Component {
 
-  state = {
-    messages: []
+  constructor(props) {
+    super(props)
+    this.state = {
+      messages: []
+    }
   }
 
   async componentDidMount() {
@@ -19,6 +22,7 @@ class App extends Component {
   async getMessages() {
     const res = await fetch(`http://localhost:8082/api/messages`)
     const json = await res.json()
+    // console.log(json._embedded.messages)
     return json._embedded.messages
   }
 
@@ -33,9 +37,30 @@ class App extends Component {
     })
   }
 
-  starClick(message) {
+  starClick = async (message) => {
+
     this.toggleProperty(message, 'starred')
+
+    return await fetch(`http://localhost:8082/api/messages`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        "messageIds": [message.id],
+        "command": "star",
+        "star": message.starred
+     }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    })
   }
+
+  // starClick(message) {
+  //   console.log(message.id)
+  //   this.toggleProperty(message, 'starred')
+  // }
+
+  
 
   selected(message) {
     this.toggleProperty(message, 'selected')
