@@ -60,8 +60,6 @@ class App extends Component {
   //   this.toggleProperty(message, 'starred')
   // }
 
-  
-
   selected(message) {
     this.toggleProperty(message, 'selected')
   }
