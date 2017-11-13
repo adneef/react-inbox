@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import Toolbar from './Toolbar'
 import MessageList from './MessageList'
 import './App.css'
+const API = `${process.env.REACT_APP_API_URL}`
 
 class App extends Component {
 
@@ -20,7 +21,7 @@ class App extends Component {
   }
 
   async getMessages() {
-    const res = await fetch(`http://localhost:8082/api/messages`)
+    const res = await fetch(API + '/messages')
     const json = await res.json()
     // console.log(json._embedded.messages)
     return json._embedded.messages
@@ -41,7 +42,7 @@ class App extends Component {
 
     this.toggleProperty(message, 'starred')
 
-    return await fetch(`http://localhost:8082/api/messages`, {
+    return await fetch(API + '/messages', {
       method: 'PATCH',
       body: JSON.stringify({
         "messageIds": [message.id],
