@@ -14,17 +14,11 @@ class App extends Component {
   }
 
   async componentDidMount() {
-    const messages = await this.getMessages()
-    this.setState({
-      messages: messages
-    })
-  }
-
-  async getMessages() {
-    const res = await fetch(API + '/messages')
+    const res = await fetch(`${API}/messages`)
     const json = await res.json()
-    // console.log(json._embedded.messages)
-    return json._embedded.messages
+    this.setState({
+      messages: json._embedded.messages
+    })
   }
 
   toggleProperty( message, property ) {
@@ -38,28 +32,37 @@ class App extends Component {
     })
   }
 
-  starClick = async (message) => {
+  async toggleSelect(message) {
+    this.toggleProperty(message, 'selected')
+  }
 
-    this.toggleProperty(message, 'starred')
-
-    return await fetch(API + '/messages', {
-      method: 'PATCH',
-      body: JSON.stringify({
-        "messageIds": [message.id],
-        "command": "star",
-        "star": message.starred
-     }),
+  async request(method ='GET', body = null) {
+    if (body) {
+      body = JSON.stringify(body)
+    }
+    return await fetch(`http://localhost:8181/api/messages`, {
+      method: method,
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
-      }
+      },
+      body: body
     })
   }
 
-  // starClick(message) {
-  //   console.log(message.id)
-  //   this.toggleProperty(message, 'starred')
-  // }
+  async updateMessages(payload) {
+    await this.request('PATCH', payload)
+  }
+
+  async starClick(message) {
+    await this.updateMessages({
+      "messageIds": [message.id],
+      "command": "star",
+      "star": message.starred
+    })
+
+    this.toggleProperty(message, 'starred')
+  }
 
   selected(message) {
     this.toggleProperty(message, 'selected')
@@ -81,10 +84,20 @@ class App extends Component {
     })
   }
 
-  deleteMessages() {
+  async deleteMessages() {
+    await this.updateMessages({
+      "messageIds": this.state.messages.filter(message => message.selected).map(message => message.id),
+      "command": "delete"
+    })
+
     const messages = this.state.messages.filter(message => !message.selected)
     this.setState({ messages })
   }
+
+  // deleteMessages() {
+  //   const messages = this.state.messages.filter(message => !message.selected)
+  //   this.setState({ messages })
+  // }
 
   toggleSelectAll() {
     const selectedMessages = this.state.messages.filter(message => message.selected)
