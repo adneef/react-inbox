@@ -7,7 +7,8 @@ const Toolbar = ({
   deleteMessages,
   toggleSelectAll,
   applyLabel,
-  removeLabel}) => {
+  removeLabel,
+  toggleCompose}) => {
 
   const unreadCount = messages.filter(message => !message.read).length
   const selectedCount = messages.filter(message => message.selected).length
@@ -31,7 +32,11 @@ const Toolbar = ({
           <span className="badge badge">{unreadCount}</span>
           {unreadCount>1 ? "unread messages": "unread message"}
         </p>
-        
+
+        <button className="btn btn-danger" onClick={toggleCompose}>
+          <i className={`fa fa-plus`}></i>
+        </button>
+
         <button className="btn btn-default" onClick={toggleSelectAll}>
           <i className={`fa ${selectAllClass}`}></i>
         </button>

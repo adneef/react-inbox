@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import Toolbar from './Toolbar'
 import MessageList from './MessageList'
+import ComposeMessage from './ComposeMessage'
 import './App.css'
-const API = `${process.env.REACT_APP_API_URL}`
 
 class App extends Component {
 
@@ -14,33 +14,36 @@ class App extends Component {
   }
 
   async componentDidMount() {
-    const res = await fetch(`${API}/messages`)
+    const res = await this.request(`/api/messages`)
     const json = await res.json()
     this.setState({
       messages: json._embedded.messages
     })
   }
 
-  toggleProperty( message, property ) {
+  toggleProperty(message, property) {
+    console.log('message in toggleProperty:', message)
     const index = this.state.messages.indexOf(message)
+    console.log('in toggleProperty, heres index:', index)
     this.setState({
       messages: [
         ...this.state.messages.slice(0, index),
         {...message, [property]: !message[property]},
-        ...this.state.messages.slice(index + 1)
+        ...this.state.messages.slice(index+1)
       ]
     })
+    console.log(this.state.messages[index])
   }
 
-  async toggleSelect(message) {
+  async selected(message) {
     this.toggleProperty(message, 'selected')
   }
 
-  async request(method ='GET', body = null) {
+  async request(path, method='GET', body=null) {
     if (body) {
       body = JSON.stringify(body)
     }
-    return await fetch(`http://localhost:8181/api/messages`, {
+    return await fetch(`${process.env.REACT_APP_API_URL}${path}`, {
       method: method,
       headers: {
         'Content-Type': 'application/json',
@@ -51,24 +54,27 @@ class App extends Component {
   }
 
   async updateMessages(payload) {
-    await this.request('PATCH', payload)
+    await this.request('/api/messages', 'PATCH', payload)
   }
 
   async starClick(message) {
+    console.log(message)
     await this.updateMessages({
-      "messageIds": [message.id],
+      "messageIds": [ message.id ],
       "command": "star",
       "star": message.starred
     })
-
+    console.log('above toggle, below updateMessages')
     this.toggleProperty(message, 'starred')
   }
 
-  selected(message) {
-    this.toggleProperty(message, 'selected')
-  }
+  async markRead() {
+    await this.updateMessages({
+      "messageIds": this.state.messages.filter(message => message.selected).map(message => message.id),
+      "command": "read",
+      "read": true
+    })
 
-  markRead() {
     this.setState({
       messages: this.state.messages.map(message => (
         message.selected ? { ...message, read: true } : message
@@ -76,7 +82,13 @@ class App extends Component {
     })
   }
 
-  markUnread() {
+  async markUnread() {
+    await this.updateMessages({
+      "messageIds": this.state.messages.filter(message => message.selected).map(message => message.id),
+      "command": "read",
+      "read": false
+    })
+
     this.setState({
       messages: this.state.messages.map(message => (
         message.selected ? { ...message, read: false } : message
@@ -94,11 +106,6 @@ class App extends Component {
     this.setState({ messages })
   }
 
-  // deleteMessages() {
-  //   const messages = this.state.messages.filter(message => !message.selected)
-  //   this.setState({ messages })
-  // }
-
   toggleSelectAll() {
     const selectedMessages = this.state.messages.filter(message => message.selected)
     const selected = selectedMessages.length !== this.state.messages.length
@@ -109,16 +116,32 @@ class App extends Component {
     })
   }
 
-  applyLabel(label) {
+  toggleCompose() {
+    this.setState({ composing: !this.state.composing })
+  }
+
+  async applyLabel(label) {
+    await this.updateMessages({
+      "messageIds": this.state.messages.filter(message => message.selected).map(message => message.id),
+      "command": "addLabel",
+      "label": label
+    })
+
     const messages = this.state.messages.map(message => (
       message.selected && !message.labels.includes(label) ?
       { ...message, labels: [...message.labels, label].sort() }:
        message
     ))
-    this.setState( { messages })
+    this.setState({ messages })
   }
 
-  removeLabel(label) {
+  async removeLabel(label) {
+    await this.updateMessages({
+      "messageIds": this.state.messages.filter(message => message.selected).map(message => message.id),
+      "command": "removeLabel",
+      "label": label
+    })
+
     const messages = this.state.messages.map(message => {
       const index = message.labels.indexOf(label)
       if(message.selected && index > -1) {
@@ -135,8 +158,36 @@ class App extends Component {
     this.setState({ messages })
   }
 
+  async sendMessage(message) {
+    const response = await this.request('/api/messages', 'POST', {
+      subject: message.subject,
+      body: message.body,
+    })
+    const newMessage = await response.json()
+
+    const messages = [...this.state.messages, newMessage]
+    this.setState({
+      messages,
+      composing: false
+    })
+  }
+
   render() {
-    return (
+    return <div>
+      <div className="navbar navbar-default" role="navigation">
+        <div className="container">
+          <div className="navbar-header">
+            <button type="button" className="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+              <span className="sr-only">Toggle navigation</span>
+              <span className="icon-bar"></span>
+              <span className="icon-bar"></span>
+              <span className="icon-bar"></span>
+            </button>
+            <a className="navbar-brand" href="/">React Inbox</a>
+          </div>
+        </div>
+      </div>
+
       <div className="App">
         <Toolbar
           messages={this.state.messages}
@@ -146,14 +197,22 @@ class App extends Component {
           toggleSelectAll={this.toggleSelectAll.bind(this)}
           applyLabel={this.applyLabel.bind(this)}
           removeLabel={this.removeLabel.bind(this)}
+          toggleCompose={this.toggleCompose.bind(this)}
         />
+
+         {
+            this.state.composing ?
+              <ComposeMessage sendMessage={ this.sendMessage.bind(this) } /> :
+              null
+          }
+
         <MessageList
           messages={this.state.messages}
           starClick={this.starClick.bind(this)}
           selected={this.selected.bind(this)}
         />
       </div>
-    )
+    </div>
   }
 }
 
