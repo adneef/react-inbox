@@ -72,7 +72,7 @@ class App extends Component {
 
     this.setState({
       messages: this.state.messages.map(message => (
-        message.selected ? { ...message, read: true } : message
+        message.selected ? { ...message, read: false } : message
       ))
     })
   }
@@ -86,7 +86,7 @@ class App extends Component {
 
     this.setState({
       messages: this.state.messages.map(message => (
-        message.selected ? { ...message, read: false } : message
+        message.selected ? { ...message, read: true } : message
       ))
     })
   }
