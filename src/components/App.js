@@ -67,7 +67,7 @@ class App extends Component {
     await this.updateMessages({
       "messageIds": this.state.messages.filter(message => message.selected).map(message => message.id),
       "command": "read",
-      "read": true
+      "read": false
     })
 
     this.setState({
@@ -81,7 +81,7 @@ class App extends Component {
     await this.updateMessages({
       "messageIds": this.state.messages.filter(message => message.selected).map(message => message.id),
       "command": "read",
-      "read": false
+      "read": true
     })
 
     this.setState({
