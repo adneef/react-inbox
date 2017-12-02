@@ -22,9 +22,7 @@ class App extends Component {
   }
 
   toggleProperty(message, property) {
-    console.log('message in toggleProperty:', message)
     const index = this.state.messages.indexOf(message)
-    console.log('in toggleProperty, heres index:', index)
     this.setState({
       messages: [
         ...this.state.messages.slice(0, index),
@@ -32,7 +30,6 @@ class App extends Component {
         ...this.state.messages.slice(index+1)
       ]
     })
-    console.log(this.state.messages[index])
   }
 
   async selected(message) {
@@ -58,13 +55,11 @@ class App extends Component {
   }
 
   async starClick(message) {
-    console.log(message)
     await this.updateMessages({
       "messageIds": [ message.id ],
       "command": "star",
       "star": message.starred
     })
-    console.log('above toggle, below updateMessages')
     this.toggleProperty(message, 'starred')
   }
 
