@@ -10,7 +10,7 @@ const Toolbar = ({
   removeLabel,
   toggleCompose}) => {
 
-  const unreadCount = messages.filter(message => !message.read).length
+  const unreadCount = messages.filter(message => message.read).length
   const selectedCount = messages.filter(message => message.selected).length
   let selectAllClass
 
